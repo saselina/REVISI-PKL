@@ -1,0 +1,17 @@
+,,,Data Asset Perlengkapan IT,,,,,,,,,
+,,,,,,,,,,,,
+No,Nama,Jenis,Type,Manufacture,S/N,Status,Proc.,RAM,SSD,HDD,Loc.,User
+1,Mikrotik,Router,RB95Ui-2HnD,Mikrotik,717506CB52BF /703,Aktif,-,-,-,-,R. Direktur,-
+2,Epson L3210,Printer,L3210,Epson,XAGK447634,Aktif,-,-,-,-,R. Direktur,-
+3,Akari,Monitor,,Akari,-,Aktif,-,-,-,-,R. Direktur,-
+4,Switch Power,Switch,DS-2FA1225-D4,Hikvision,-,-,-,-,-,-,R. Direktur,-
+5,Digital Video Recorder,DVR,DS-7208HUHI-K1/E,Hikvision,G12137314,Aktif,-,-,-,-,R. Direktur,-
+6,Laptop,Laptop,Vostro 14 3000,Dell,H7MJ803,Aktif,Core i3-7th Gen,8Gb DDR4,-,500Gb,Store,Rahmadi
+7,PC,PC,MSI H610M-E DDR4,MSI,-,Aktif,Core i5-12400,8Gb DDR4,NVMe 256Gb,-,Store,Daman
+8,PC,PC,ASUS H971-PLUS,ASUS,-,Aktif,Intel Pentium G3258,8Gb DDR3,238Gb Team & 128Gb Eyota,-,Store,Renita
+9,Epson L3150,Printer,L3150,Epson,X5EM027560,Aktif,-,-,-,-,Store,-
+10,LinkSys,Access Point,WRT1900AC,LinkSys,13J10608401418,Aktif,-,-,-,-,Store,-
+11,Range Extender,Access Point,TL-WA850RE,TP-Link,2.24721E+12,Aktif,-,-,-,-,Store,-
+12,Laptop,Laptop,Ideapad 330-14AST,Lenovo,PF14XT6Q,Aktif,AMD A9-9425 Radeon R5,8Gb DDR4,500Gb Adata,-,Store,Miswati
+13,UPS,UPS,CE700,ICA,1B1HL2100020,Aktif,-,-,-,-,Store,-
+14,Epson LX-310,Printer,LX-310,Epson,Q7FY118355,Aktif,-,-,-,-,Store,-
