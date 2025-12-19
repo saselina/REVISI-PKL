@@ -7,17 +7,11 @@
             {{-- LEFT: LOGO --}}
             <div class="flex items-center">
                 <a href="{{ route('dashboard') }}" class="flex items-center">
-                    <x-application-logo class="h-8 w-auto text-[#647FBC]" />
+
                 </a>
 
                 <div class="hidden sm:flex sm:ml-6">
-                    <x-nav-link
-                        :href="route('dashboard')"
-                        :active="request()->routeIs('dashboard')"
-                        class="text-gray-700 hover:text-[#647FBC] border-b-2 border-transparent hover:border-[#91ADC8] transition"
-                    >
-                        Dashboard
-                    </x-nav-link>
+                   
                 </div>
             </div>
 

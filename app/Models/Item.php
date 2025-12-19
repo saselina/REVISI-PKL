@@ -9,17 +9,22 @@ class Item extends Model
 {
     use HasFactory;
 
-    // Nama tabel di database (asumsi nama tabel Anda adalah 'items')
     protected $table = 'items';
 
-    // Kolom yang dapat diisi massal (Mass Assignable)
-    // PASTIKAN SEMUA NAMA KOLOM INI SESUAI DENGAN SCHEMA DATABASE ANDA
     protected $fillable = [
         'nama_barang',
+        'kategori',      // ADDED
         'jenis_barang',
+        'type',          // ADDED
+        'manufacture',   // ADDED
+        'sn',            // ADDED
         'status',
+        'proc',          // ADDED
+        'ram',           // ADDED
+        'ssd',           // ADDED
+        'hdd',           // ADDED
         'ruangan',
         'gedung',
-        // Jika Anda memiliki kolom lain seperti 'kode_aset', tambahkan di sini.
+        'user',          // ADDED
     ];
 }
