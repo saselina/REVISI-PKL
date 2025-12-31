@@ -12,6 +12,7 @@ use App\Livewire\LaporanAktif;
 use App\Livewire\LaporanNonAktif;
 use App\Livewire\ManajemenUser;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ItemController; // Tambahkan ini
 use App\Models\Item;
 
 // PUBLIC ROUTES
@@ -27,8 +28,12 @@ Route::middleware(['auth'])->group(function () {
     // 2. PROFILE
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 
-    // 3. MASTER ASET (Penting: assets.index harus ada!)
+    // 3. MASTER ASET
     Route::get('/assets', AssetMasterList::class)->name('assets.index');
+
+    // --- TAMBAHKAN ROUTE INI UNTUK HANDLE IMPORT CSV ---
+    Route::post('/assets/import', [ItemController::class, 'import'])->name('assets.import');
+
     Route::get('/assets/create', CreateItem::class)->name('assets.create');
     Route::get('/assets/active', AssetActiveList::class)->name('assets.active');
     Route::get('/assets/inactive', AssetInactiveList::class)->name('assets.inactive');

@@ -4,82 +4,93 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
+use App\Models\Item;
 
 class ItemTableSeeder extends Seeder
 {
     public function run(): void
     {
+        // Kosongkan tabel sebelum import
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('items')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Nama file sudah disederhanakan
+        // Daftar file yang akan diimport
         $filesToImport = [
-            'office.csv' => 'GEDUNG OFFICE',
-            'service.csv' => 'GEDUNG SERVICE',
-            'store.csv' => 'GEDUNG STORE',
+          'Aset PT. Famili kita3.csv'
         ];
 
         $path = database_path('seeders/csv/');
-        $delimiters = [',', ';'];
 
-        foreach ($filesToImport as $fileName => $gedungName) {
+        foreach ($filesToImport as $fileName) {
             $csvFile = $path . $fileName;
 
             if (!file_exists($csvFile)) {
-                $this->command->error("❌ FILE TIDAK DITEMUKAN: $fileName. Pastikan file ada di database/seeders/csv/.");
+                $this->command->error("❌ FILE TIDAK DITEMUKAN: $fileName");
                 continue;
             }
 
-            $imported = false;
-
-            foreach ($delimiters as $delimiter) {
-                if (($handle = fopen($csvFile, 'r')) === FALSE) {
-                    continue;
-                }
-
-                // Lewati 3 baris header
-                for ($i = 0; $i < 3; $i++) {
-                    fgetcsv($handle, 0, $delimiter);
-                }
+            if (($handle = fopen($csvFile, 'r')) !== FALSE) {
+                // Lewati baris pertama (Header) sesuai startRow() di ItemImport
+                fgetcsv($handle, 0, ';');
 
                 $data = [];
-                $successCount = 0;
+                $count = 0;
 
-                while (($row = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
+                while (($row = fgetcsv($handle, 0, ';')) !== FALSE) {
+                    // Mapping berdasarkan urutan kolom CSV lu yang baru:
+                    // 0:No, 1:Nama Barang, 2:Kategori, 3:Kode Aset, 4:S/N,
+                    // 5:Gedung, 6:Lokasi, 7:Status, 8:User, 9:Type,
+                    // 10:Manufacture, 11:Processor, 12:Ram, 13:SSD, 14:HDD,
+                    // 15:Tgl Perolehan, 16:Nilai, 17:Umur Ekonomis
 
-                    // Konversi Encoding
-                    $row = array_map(function ($value) {
-                        return mb_convert_encoding($value, 'UTF-8', 'Windows-1252');
-                    }, $row);
+                    if (!isset($row[1]) || empty($row[1])) continue;
 
-                    if (count($row) < 12) continue;
-
-                    $itemData = [
-                        'nama_barang' => $row[1] ?? null, 'jenis_barang' => $row[2] ?? null,
-                        'type' => $row[3] ?? null, 'manufacture' => $row[4] ?? null,
-                        'serial_number' => $row[5] ?? null, 'status' => $row[6] ?? 'Aktif',
-                        'processor' => $row[7] ?? null, 'ram' => $row[8] ?? null,
-                        'ssd' => $row[9] ?? null, 'hdd' => $row[10] ?? null,
-                        'ruangan' => $row[11] ?? null, 'user' => $row[12] ?? null,
-                        'gedung' => $gedungName,
-                        'created_at' => now(), 'updated_at' => now(),
+                    $data[] = [
+                        'nama_barang'       => $row[1] ?? null,
+                        'kategori'          => $row[2] ?? null,
+                        'kode_aset'         => $row[3] ?? null,
+                        'serial_number'     => $row[4] ?? null,
+                        'gedung'            => $row[5] ?? null,
+                        'lokasi'            => $row[6] ?? null,
+                        'status'            => $row[7] ?? 'Aktif',
+                        'user'              => $row[8] ?? null,
+                        'type'              => $row[9] ?? null,
+                        'manufacture'       => $row[10] ?? null,
+                        'processor'         => $row[11] ?? null,
+                        'ram'               => $row[12] ?? null,
+                        'ssd'               => $row[13] ?? null,
+                        'hdd'               => $row[14] ?? null,
+                        'tanggal_perolehan' => $row[15] ?? null,
+                        'nilai_perolehan'   => $this->cleanPrice($row[16] ?? 0),
+                        'umur_ekonomis'     => $row[17] ?? null,
+                        'created_at'        => now(),
+                        'updated_at'        => now(),
                     ];
 
-                    $data[] = $itemData;
-                    $successCount++;
-                }
-                fclose($handle);
+                    $count++;
 
+                    // Batch insert per 100 baris biar kenceng
+                    if (count($data) >= 100) {
+                        DB::table('items')->insert($data);
+                        $data = [];
+                    }
+                }
+
+                // Sisa data insert
                 if (!empty($data)) {
                     DB::table('items')->insert($data);
-                    $this->command->info("✅ Sukses impor $successCount baris data dari $fileName dengan delimiter '$delimiter'.");
-                    $imported = true;
-                    break;
                 }
-            }
-            if (!$imported) {
-                $this->command->warn("⚠️ Gagal membaca data dari $fileName menggunakan delimiter koma (,) maupun titik koma (;).");
+
+                fclose($handle);
+                $this->command->info("✅ Berhasil memproses $count data dari $fileName");
             }
         }
+    }
+
+    private function cleanPrice($value)
+    {
+        $clean = preg_replace('/[^0-9]/', '', $value);
+        return (float) $clean ?: 0;
     }
 }

@@ -12,11 +12,16 @@ return new class extends Migration
             $table->id();
             $table->string('nama_barang');
             $table->string('jenis_barang')->nullable();
+            $table->string('kategori')->nullable();
             $table->string('status')->default('Aktif');
-            $table->string('ruangan')->nullable();
+            $table->string('lokasi')->nullable();
+            $table->string('tanggal_perolehan')->nullable();
+            $table->decimal('nilai_perolehan', 15, 2)->nullable();
+            $table->string('umur_ekonomis')->nullable();
             $table->string('type')->nullable();
             $table->string('manufacture')->nullable();
             $table->string('serial_number')->nullable();
+            $table->string('kode_aset')->nullable();
             $table->string('processor')->nullable();
             $table->string('ram')->nullable();
             $table->string('ssd')->nullable();

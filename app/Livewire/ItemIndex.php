@@ -6,38 +6,54 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Item;
 use App\Models\User;
+use Illuminate\Support\Facades\Session;
 
 class ItemIndex extends Component
 {
     use WithPagination;
 
     // FILTERS
-
     public $search = '';
+    public $perPage = 10;
 
-    // METRIK
+    // METRIK (Properti untuk menyimpan data statistik)
     public $totalAset = 0;
-    public $perPage = 10; // Untuk dropdown "Tampilkan data"
-
     public $totalUser = 0;
+    public $asetAktif = 0;
+    public $asetTidakAktif = 0;
 
-    // QUERY STRING
+    // QUERY STRING agar filter terbaca di URL
     protected $queryString = [
-        'filterGedung' => ['except' => ''],
-        'filterKategori' => ['except' => ''],
         'search' => ['except' => ''],
     ];
 
     public function mount()
     {
         $this->calculateMetrics();
+
+        // Logika otomatis jika datang dari route laporan tertentu
+        if (request()->routeIs('laporan.aktif')) {
+            $this->search = 'Aktif';
+        } elseif (request()->routeIs('laporan.nonaktif')) {
+            $this->search = 'Tidak Aktif';
+        }
     }
+
+    /**
+     * Menghitung statistik untuk Dashboard Card
+     * Diupdate untuk kategori status yang lebih spesifik
+     */
     protected function calculateMetrics()
     {
         $this->totalAset = Item::count();
-        $this->totalUser = User::count(); // Ambil data user asli dari DB
-    }
+        $this->totalUser = User::count();
 
+        // Menghitung status Aktif (Aktif, Baik, Kurang Baik)
+        $this->asetAktif = Item::whereIn('status', ['Aktif', 'Baik', 'Kurang Baik', 'active'])->count();
+
+        // Menghitung status Tidak Aktif (Tidak Aktif, Rusak, Sudah Kusam)
+        $this->asetTidakAktif = Item::whereIn('status', ['Tidak Aktif', 'Rusak', 'Sudah Kusam'])->count();
+    }
 
     public function updating($property)
     {
@@ -45,38 +61,37 @@ class ItemIndex extends Component
         if (in_array($property, ['search', 'perPage'])) {
             $this->resetPage();
         }
-        if (request()->routeIs('laporan.aktif')) {
-        $this->search = 'Aktif'; // Atau filter status = aktif
-    } elseif (request()->routeIs('laporan.nonaktif')) {
-        $this->search = 'Tidak Aktif';
     }
-    }
+
     /**
      * Main Query Render
      */
     public function render()
-{
-    $query = Item::query()
-        ->latest()
-        ->when($this->search, fn ($q) =>
-            $q->where(fn ($sub) =>
-                $sub->where('nama_barang', 'like', "%{$this->search}%")
-                    ->orWhere('ruangan', 'like', "%{$this->search}%")
-                    ->orWhere('kode_barang', 'like', "%{$this->search}%")
-            )
-        );
+    {
+        $searchTerm = trim($this->search);
 
-    return view('livewire.item-index', [
-        // Force the value to be an integer
-        'assets' => $query->paginate((int)$this->perPage),
+        $query = Item::query()
+            ->latest()
+            ->when($searchTerm, function ($q) use ($searchTerm) {
+                $q->where(function ($sub) use ($searchTerm) {
+                    $sub->where('nama_barang', 'like', "%{$searchTerm}%")
+                        ->orWhere('manufacture', 'like', "%{$searchTerm}%")
+                        ->orWhere('gedung', 'like', "%{$searchTerm}%")
+                        ->orWhere('lokasi', 'like', "%{$searchTerm}%")
+                        ->orWhere('kode_barang', 'like', "%{$searchTerm}%")
+                        ->orWhere('status', 'like', "%{$searchTerm}%"); // Tambahan agar filter status juga berfungsi di pencarian
+                });
+            });
 
-        'listGedung'     => Item::distinct()->pluck('gedung'),
-        'countBarang'    => Item::count(),
-        'totalUser'      => User::count(),
-        'asetAktif'      => Item::where('status', 'regexp', 'aktif|active')->count(),
-        'asetTidakAktif' => Item::where('status', 'like', '%Tidak Aktif%')->count(),
-    ]);
-}
+        return view('livewire.item-index', [
+            'assets'         => $query->paginate((int)$this->perPage),
+            'listGedung'     => Item::distinct()->whereNotNull('gedung')->pluck('gedung'),
+            'countBarang'    => $this->totalAset,
+            'totalUser'      => $this->totalUser,
+            'asetAktif'      => $this->asetAktif,
+            'asetTidakAktif' => $this->asetTidakAktif,
+        ]);
+    }
 
     // DELETE LOGIC ------------------------------------------------------
 
@@ -85,19 +100,18 @@ class ItemIndex extends Component
     public function confirmDelete($id)
     {
         $this->deleteId = $id;
-
-        // Trigger JS modal di Blade
         $this->dispatch('showDeleteConfirm');
     }
 
     public function deleteItem()
     {
-        Item::findOrFail($this->deleteId)->delete();
+        if ($item = Item::find($this->deleteId)) {
+            $item->delete();
+            Session::flash('success', 'Aset berhasil dihapus!');
+        }
 
-        session()->flash('message', 'Aset berhasil dihapus!');
         $this->resetPage();
-
-        // Refresh metrik agar dashboard mini update realtime
+        // Refresh metrik agar angka di card update realtime setelah hapus
         $this->calculateMetrics();
     }
 }

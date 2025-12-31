@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class AssetController extends Controller
 {
+    
     public function show(Item $item)
     {
         return view('assets.detail', [

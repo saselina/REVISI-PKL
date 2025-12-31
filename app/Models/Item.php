@@ -12,19 +12,22 @@ class Item extends Model
     protected $table = 'items';
 
     protected $fillable = [
+        'kode_aset',
         'nama_barang',
-        'kategori',      // ADDED
         'jenis_barang',
-        'type',          // ADDED
-        'manufacture',   // ADDED
-        'sn',            // ADDED
+        'kategori',         // Sudah ada
         'status',
-        'proc',          // ADDED
-        'ram',           // ADDED
-        'ssd',           // ADDED
-        'hdd',           // ADDED
-        'ruangan',
         'gedung',
-        'user',          // ADDED
+        'lokasi',
+        'tanggal_perolehan',  // Ditambahkan
+        'nilai_perolehan',  // Ditambahkan
+        'umur_ekonomis',    // Ditambahkan
+        'type',
+        'manufacture',
+        'serial_number',
+        'processor',
+        'ssd',
+        'hdd',
+        'user',
     ];
 }
